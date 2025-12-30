@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Next Light Show Countdown</title>
+    <style>
+        body { 
+            font-family: Arial, Helvetica, sans-serif; 
+            background: #000; 
+            color: #fff; 
+            text-align: center; 
+            padding: 50px 20px; 
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        h1 { 
+            font-size: 2.8em; 
+            margin-bottom: 10px;
+        }
+        #next-show { 
+            font-size: 2.2em; 
+            margin: 20px 0;
+        }
+        .show-time { 
+            font-size: 1.4em; 
+            color: #0ff; 
+            font-weight: bold;
+        }
+        #countdown { 
+            font-size: 4em; 
+            margin: 40px 0; 
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+        #message {
+            font-size: 2.5em;
+            margin: 40px 0;
+        }
+        .home-button {
+            margin-top: 60px;
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #0ff;
+            color: #000;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: background-color 0.3s;
+        }
+        .home-button:hover {
+            background-color: #0cc;
+        }
+        @media (max-width: 600px) {
+            h1 { font-size: 2.2em; }
+            #next-show { font-size: 1.8em; }
+            #countdown { font-size: 3em; }
+            #message { font-size: 2em; }
+            .home-button { 
+                font-size: 1.1em; 
+                padding: 8px 16px; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Next Light Show Countdown</h1>
+    <div id="next-show"></div>
+    <div id="countdown"></div>
+    <div id="message"></div>
+
+    <a href="https://www.canva.com/design/DAG86rufzs4/Lg1GzhuAmQDHHpLsxkG3zg/view?utm_content=DAG86rufzs4&utm_campaign=designshare&utm_medium=link2&utm_source=uniquelinks&utlId=h30fb94cda1" 
+       class="home-button" 
+       target="_top">
+       Home
+    </a>
+
+    <script>
+        function updateCountdown() {
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            
+            const seasonStart = new Date(2025, 11, 1); // Dec 1, 2025 (months are 0-based)
+            const seasonEnd = new Date(2026, 1, 1);   // Feb 1, 2026
+            
+            const messageEl = document.getElementById('message');
+            const nextShowEl = document.getElementById('next-show');
+            const countdownEl = document.getElementById('countdown');
+            
+            // Clear previous
+            messageEl.innerHTML = '';
+            nextShowEl.innerHTML = '';
+            countdownEl.innerHTML = '';
+            
+            if (now < seasonStart) {
+                messageEl.innerHTML = 'Light Show Season Starts<br>December 1, 2025';
+                return;
+            }
+            
+            if (now > new Date(seasonEnd.getTime() + 86400000 - 1)) { // After Feb 1 end of day
+                messageEl.innerHTML = 'Light Show Season Has Ended';
+                return;
+            }
+            
+            // During season
+            const shows = [
+                {h:15, m:30}, {h:16, m:0}, {h:16, m:30}, {h:17, m:0}, {h:17, m:30},
+                {h:18, m:0}, {h:18, m:30}, {h:19, m:0}, {h:19, m:30}, {h:20, m:0}
+            ];
+            
+            let nextTime = null;
+            let nextLabel = "";
+            
+            for (let show of shows) {
+                const showTime = new Date(today);
+                showTime.setHours(show.h, show.m, 0, 0);
+                if (showTime > now) {
+                    nextTime = showTime;
+                    nextLabel = `${show.h.toString().padStart(2,'0')}:${show.m.toString().padStart(2,'0')}`;
+                    break;
+                }
+            }
+            
+            if (!nextTime) {
+                // Rollover to next day (if still in season)
+                nextTime = new Date(today);
+                nextTime.setDate(nextTime.getDate() + 1);
+                if (nextTime <= seasonEnd) {
+                    nextTime.setHours(15, 30, 0, 0);
+                    nextLabel = "15:30 (tomorrow)";
+                } else {
+                    messageEl.innerHTML = 'Light Show Season Has Ended';
+                    return;
+                }
+            }
+            
+            nextShowEl.innerHTML = `Next show at: <span class="show-time">${nextLabel}</span>`;
+            
+            const diff = nextTime - now;
+            
+            if (diff <= 0) {
+                countdownEl.innerHTML = "Light Show Starting Now!";
+                return;
+            }
+            
+            const days = Math.floor(diff / 86400000);
+            const hours = Math.floor((diff % 86400000) / 3600000);
+            const minutes = Math.floor((diff % 3600000) / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            countdownEl.innerHTML = 
+                `${days > 0 ? days + 'd ' : ''}${hours}h ${minutes}m ${seconds}s`;
+        }
+        
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
